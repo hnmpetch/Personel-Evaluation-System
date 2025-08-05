@@ -1,0 +1,29 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+#frontend
+
+# dependencies
+frontend/pes/node_modules
+frontend/pes/.pnp
+frontend/pes/.pnp.js
+
+# testing
+frontend/pes/coverage
+
+# production
+frontend/pes/build
+
+# misc
+frontend/pes/.DS_Store
+frontend/pes/.env.local
+frontend/pes/.env.development.local
+frontend/pes/.env.test.local
+frontend/pes/.env.production.local
+
+frontend/pes/npm-debug.log*
+frontend/pes/yarn-debug.log*
+frontend/pes/yarn-error.log*
+
+
+#backend
+backend/node_modules
