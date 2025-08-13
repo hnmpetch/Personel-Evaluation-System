@@ -1,0 +1,219 @@
+Table users {
+  id                uuid [pk, increment]
+  username          varchar(64) [unique, not null]
+  password_hash     varchar(255) [not null]
+  full_name         varchar(150) [not null]
+  email             varchar(150) [unique]
+  phone             varchar(32)  [not null]
+  status            varchar(16) [not null, note: 'ACTIVE, INACTIVE, SUSPENDED']
+  created_at        timestamptz [not null, increment]
+  updated_at        timestamptz [not null, increment]
+}
+
+Table roles {
+  id        serial [pk]
+  code      varchar(32) [unique, not null, note: 'ADMIN, HR, EVALUATOR, EVALUATEE']
+  name      varchar(100) [not null]
+}
+
+Table user_roles {
+  user_id   uuid [not null]
+  role_id   int  [not null]
+  created_at timestamptz [not null, increment]
+  Note: 'PK เป็นคอมโพสิต'
+  Indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+Table departments {
+  id        serial [pk]
+  code      varchar(32) [unique]
+  name      varchar(150) [not null]
+}
+
+Table positions {
+  id        serial [pk]
+  name      varchar(150) [not null]
+}
+
+Table evaluatee_profiles {
+  id                uuid [pk, increment]
+  user_id           uuid [not null]
+  employee_no       varchar(64)
+  department_id     int
+  position_id       int
+  hire_date         date
+  created_at        timestamptz [not null, increment]
+  updated_at        timestamptz [not null, increment]
+}
+
+Table evaluation_cycles {
+  id            uuid [pk, increment]
+  code          varchar(50) [unique, not null]
+  name          varchar(150) [not null]
+  description   text
+  start_at      timestamptz [not null]
+  end_at        timestamptz [not null]
+  is_open       boolean [not null, default: true]
+  created_by    uuid [not null]
+  created_at    timestamptz [not null, increment]
+}
+
+Table topics {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  name          varchar(150) [not null]
+  description   text
+  display_order int [not null, default: 0]
+}
+
+Table indicators {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  topic_id      uuid [not null]
+  name          varchar(200) [not null]
+  details       text
+  weight        numeric(6,2) [not null, default: 1.00]
+  scoring_type  varchar(24) [not null, note: 'SCALE_1_4, BOOLEAN, NUMERIC, CUSTOM']
+  evidence_type varchar(24) [note: 'PDF, URL, FILE, NONE']
+  require_evidence boolean [not null, default: false]
+  display_order int [not null, default: 0]
+}
+
+Table committee_assignments {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  evaluatee_id  uuid [not null, note: 'evaluatee_profiles.id']
+  evaluator_id  uuid [not null, note: 'users.id']
+  role          varchar(16) [not null, note: 'CHAIR, MEMBER']
+  assigned_by   uuid [not null]
+  created_at    timestamptz [not null, increment]
+  update_at     unique (cycle_id, evaluatee_id, evaluator_id)
+}
+
+Table evidences {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  evaluatee_id  uuid [not null]
+  indicator_id  uuid [not null]
+  owner_user_id uuid [not null]
+  kind          varchar(16) [not null, note: 'PDF, URL, FILE']
+  file_path     varchar(500)
+  url           varchar(500)
+  description   text
+  uploaded_at   timestamptz [not null, increment]
+}
+
+Table assessments {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  evaluatee_id  uuid [not null]
+  evaluator_id  uuid [not null]
+  status        varchar(16) [not null, default: 'DRAFT', note: 'DRAFT, SUBMITTED, SIGNED, REVOKED']
+  comment       text
+  created_at    timestamptz [not null, increment]
+  submitted_at  timestamptz
+}
+
+Table assessment_items {
+  id             uuid [pk, increment]
+  assessment_id  uuid [not null]
+  indicator_id   uuid [not null]
+  score          numeric(6,2) [not null]
+  comment        text
+  create_at      unique (assessment_id, indicator_id)
+}
+
+Table self_assessments {
+  id            uuid [pk, increment]
+  cycle_id      uuid [not null]
+  evaluatee_id  uuid [not null]
+  status        varchar(16) [not null, default: 'DRAFT']
+  comment       text
+  created_at    timestamptz [not null, increment]
+  submitted_at  timestamptz
+}
+
+Table self_assessment_items {
+  id                 uuid [pk, increment]
+  self_assessment_id uuid [not null]
+  indicator_id       uuid [not null]
+  score              numeric(6,2)
+  comment            text
+  create_at          unique (self_assessment_id, indicator_id)
+}
+
+Table signatures {
+  id             uuid [pk, increment]
+  assessment_id  uuid [not null]
+  signer_id      uuid [not null, note: 'users.id (กรรมการ)']
+  signed_at      timestamptz [not null, increment]
+  signature_path varchar(500)
+  status         varchar(12) [not null, default: 'ACTIVE', note: 'ACTIVE, REVOKED']
+  reason         text
+  create_at      unique (assessment_id, signer_id)
+}
+
+Table reports {
+  id           uuid [pk, increment]
+  cycle_id     uuid [not null]
+  type         varchar(32) [not null, note: 'SUMMARY, DETAIL, BY_DEPT, BY_EVALUATOR']
+  parameters   jsonb
+  generated_by uuid [not null]
+  file_path    varchar(500)
+  created_at   timestamptz [not null, increment]
+}
+
+Table exports {
+  id           uuid [pk, increment]
+  cycle_id     uuid [not null]
+  evaluatee_id uuid
+  format       varchar(16) [not null, note: 'PDF, CSV, XLSX, JSON']
+  file_path    varchar(500)
+  requested_by uuid [not null]
+  created_at   timestamptz [not null, increment]
+}
+
+Table audit_logs {
+  id          bigserial [pk]
+  at          timestamptz [not null, increment]
+  actor_id    uuid
+  action      varchar(64) [not null]
+  entity      varchar(64) [not null]
+  entity_id   uuid
+  details     jsonb
+  ip          inet
+}
+
+Ref: user_roles.user_id > users.id
+Ref: user_roles.role_id > roles.id
+Ref: evaluatee_profiles.user_id > users.id
+Ref: evaluatee_profiles.department_id > departments.id
+Ref: evaluatee_profiles.position_id > positions.id
+Ref: topics.cycle_id > evaluation_cycles.id
+Ref: indicators.cycle_id > evaluation_cycles.id
+Ref: indicators.topic_id > topics.id
+Ref: committee_assignments.cycle_id > evaluation_cycles.id
+Ref: committee_assignments.evaluatee_id > evaluatee_profiles.id
+Ref: committee_assignments.evaluator_id > users.id
+Ref: evidences.cycle_id > evaluation_cycles.id
+Ref: evidences.evaluatee_id > evaluatee_profiles.id
+Ref: evidences.indicator_id > indicators.id
+Ref: evidences.owner_user_id > users.id
+Ref: assessments.cycle_id > evaluation_cycles.id
+Ref: assessments.evaluatee_id > evaluatee_profiles.id
+Ref: assessments.evaluator_id > users.id
+Ref: assessment_items.assessment_id > assessments.id
+Ref: assessment_items.indicator_id > indicators.id
+Ref: self_assessments.cycle_id > evaluation_cycles.id
+Ref: self_assessments.evaluatee_id > evaluatee_profiles.id
+Ref: self_assessment_items.self_assessment_id > self_assessments.id
+Ref: self_assessment_items.indicator_id > indicators.id
+Ref: signatures.assessment_id > assessments.id
+Ref: signatures.signer_id > users.id
+Ref: reports.cycle_id > evaluation_cycles.id
+Ref: reports.generated_by > users.id
+Ref: exports.cycle_id > evaluation_cycles.id
+Ref: exports.evaluatee_id > evaluatee_profiles.id
+Ref: exports.requested_by > users.id
