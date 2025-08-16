@@ -1,5 +1,5 @@
 const { where } = require('sequelize');
-const { User } = require('../model/user.js');
+const { User } = require('../model/users.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
