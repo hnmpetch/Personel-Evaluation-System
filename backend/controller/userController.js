@@ -1,3 +1,13 @@
+/*
+API User (Admin / ผู้รับการประเมิน / กรรมการ)
+GET     /api/users                       - ดึงรายชื่อผู้ใช้ทั้งหมด (Admin)
+POST    /api/users                       - เพิ่มผู้ใช้ใหม่
+GET     /api/users/{id}                  - ดึงข้อมูลผู้ใช้ตาม ID
+PUT     /api/users/{id}                  - แก้ไขข้อมูลผู้ใช้
+DELETE  /api/users/{id}                  - ลบผู้ใช้
+*/
+
+
 const { where } = require('sequelize');
 const { User } = require('../model/users.js');
 const jwt = require('jsonwebtoken');
