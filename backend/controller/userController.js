@@ -187,7 +187,6 @@ async function update_user(req, res) {
 async function deleteUser(req, res) {
 
     const token = req.get("Authorization");
-    const { id } = req.body;
 
     
     if (!token){
@@ -203,7 +202,7 @@ async function deleteUser(req, res) {
     try{
         await User.destroy({
             where:  {
-                id: id
+                username: decoded.username
             }
         })
 
