@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../database.js');
 
-const Users = sequelize.define('Users', {
+const User = sequelize.define('Users', {
     id: {
         type: DataTypes.CHAR,
         allowNull: false,
@@ -51,5 +51,5 @@ const Users = sequelize.define('Users', {
 })
 
 module.exports = {
-    Users
+    User
 }
