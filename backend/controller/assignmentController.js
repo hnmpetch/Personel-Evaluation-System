@@ -5,3 +5,8 @@ POST    /api/assignments                  - มอบหมายกรรมก
 PUT     /api/assignments/{id}             - แก้ไขการมอบหมาย
 DELETE  /api/assignments/{id}             - ยกเลิกการมอบหมาย
 */
+
+const { Committee_assignments } = require("./../model/committee_assignments");
+
+
+
